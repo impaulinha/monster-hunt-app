@@ -1,12 +1,39 @@
+import { LuckiestGuy_400Regular } from '@expo-google-fonts/luckiest-guy'
+import * as SplashScreen from 'expo-splash-screen'
+import { Routes } from './src/routes/app.routes'
 import { StatusBar } from 'expo-status-bar'
-import { StyleSheet, Text, View } from 'react-native'
-import './global.css'
+import { useFonts } from 'expo-font'
+import { useEffect } from 'react'
+import {
+  RobotoCondensed_200ExtraLight,
+  RobotoCondensed_400Regular,
+  RobotoCondensed_700Bold,
+} from '@expo-google-fonts/roboto-condensed'
+
+SplashScreen.preventAutoHideAsync()
 
 export default function App() {
+  const [fontsLoaded, error] = useFonts({
+    LuckiestGuy_400Regular,
+    RobotoCondensed_200ExtraLight,
+    RobotoCondensed_400Regular,
+    RobotoCondensed_700Bold,
+  })
+
+  useEffect(() => {
+    if (fontsLoaded || error) {
+      SplashScreen.hideAsync()
+    }
+  }, [fontsLoaded, error])
+
+  if (!fontsLoaded && !error) {
+    return null
+  }
+
   return (
-    <View className="">
-      <Text>Open up App.tsx to start working on your app!</Text>
+    <>
       <StatusBar style="auto" />
-    </View>
+      <Routes />
+    </>
   )
 }
