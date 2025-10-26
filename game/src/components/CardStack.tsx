@@ -1,4 +1,4 @@
-import { Animated, Dimensions, PanResponder, View } from 'react-native'
+import { Animated, PanResponder, View } from 'react-native'
 import { useMemo, useRef, useState } from 'react'
 import { CardItem } from '../types/CardItem'
 import { ScoreCard } from './ScoreCard'
@@ -6,10 +6,10 @@ import { GameCard } from './GameCard'
 import '../../global.css'
 
 export function CardStack() {
-  const cardHeight = 400
-  const cardWidth = 300
-  const SWIPE_THRESHOLD = 130
-  const { width: SCREEN_W } = Dimensions.get('window')
+  const CARD_HEIGHT = 450
+  const CARD_WIDTH = 320
+
+  const position = useRef(new Animated.ValueXY()).current
 
   const cards: CardItem[] = useMemo(
     () => [
@@ -20,139 +20,98 @@ export function CardStack() {
   )
 
   const [index, setIndex] = useState(0)
-  const frontIndex = index % cards.length
-  const backIndex = (index + 1) % cards.length
-
-  const translate = useRef(new Animated.ValueXY({ x: 0, y: 0 })).current
-  const animProgres = useRef(new Animated.Value(0)).current
+  const frontCardIndex = index % cards.length
+  const backCardIndex = (index + 1) % cards.length
 
   const panResponder = useRef(
     PanResponder.create({
-      onMoveShouldSetPanResponder: (evt, gestureState) => {
-        const dx = Math.abs(gestureState.dx)
-        const dy = Math.abs(gestureState.dy)
-        return dx > 10 && dx > dy
-      },
-
-      // false para que nao ative em qualquer toque simples
-      onStartShouldSetPanResponder: () => false,
-
-      onPanResponderGrant: () => {
-        translate.extractOffset()
-      },
+      onStartShouldSetPanResponder: () => true,
 
       onPanResponderMove: (evt, gestureState) => {
-        const limitedY = gestureState.dy * 0.3
-        translate.setValue({ x: gestureState.dx, y: limitedY })
-
-        const progress = Math.min(
-          Math.abs(gestureState.dx) / SWIPE_THRESHOLD,
-          1,
-        )
-        animProgres.setValue(progress)
+        position.setValue({ x: gestureState.dx, y: gestureState.dy })
       },
 
       onPanResponderRelease: (evt, gestureState) => {
-        translate.flattenOffset()
-        const movedX = gestureState.dx
-        const absX = Math.abs(movedX)
-
-        if (absX > SWIPE_THRESHOLD) {
-          const toX = movedX > 0 ? SCREEN_W * 1.2 : -SCREEN_W * 1.2
-
-          // Troca o índice antes da animação começar, pra evitar demora ao carregar o próximo card
-          setIndex((s) => (s + 1) % cards.length)
-
-          Animated.timing(translate, {
-            toValue: { x: toX, y: gestureState.dy * 0.5 },
-            duration: 200,
-            useNativeDriver: true,
-          }).start(() => {
-            translate.setValue({ x: 0, y: 0 })
-            animProgres.setValue(0)
+        if (gestureState.dx > 120) {
+          Animated.spring(position, {
+            toValue: { x: CARD_WIDTH + 100, y: gestureState.dy },
+            useNativeDriver: false,
+          }).start(({ finished }) => {
+            if (finished) {
+              setIndex((currentIndex) => currentIndex + 1)
+              position.setValue({ x: 0, y: 0 })
+            }
+          })
+        } else if (gestureState.dx < -120) {
+          Animated.spring(position, {
+            toValue: { x: -CARD_WIDTH - 100, y: gestureState.dy },
+            useNativeDriver: false,
+          }).start(({ finished }) => {
+            if (finished) {
+              setIndex((currentIndex) => currentIndex + 1)
+              position.setValue({ x: 0, y: 0 })
+            }
           })
         } else {
-          Animated.spring(translate, {
+          Animated.spring(position, {
             toValue: { x: 0, y: 0 },
-            useNativeDriver: true,
-            friction: 6,
-          }).start()
-          Animated.timing(animProgres, {
-            toValue: 0,
-            duration: 250,
-            useNativeDriver: true,
+            friction: 4,
+            useNativeDriver: false,
           }).start()
         }
       },
     }),
-  ).current
+  )
 
-  const frontAnimatedStyle = {
+  const frontAnimation = {
     transform: [
-      { translateX: translate.x },
-      { translateY: translate.y },
       {
-        rotate: translate.x.interpolate({
+        rotate: position.x.interpolate({
           extrapolate: 'clamp',
-          inputRange: [-200, 200],
-          outputRange: ['-15deg', '15deg'],
+          inputRange: [-CARD_WIDTH / 2, 0, CARD_WIDTH / 2],
+          outputRange: ['-10deg', '0deg', '10deg'],
         }),
       },
-      {
-        scale: animProgres.interpolate({
-          inputRange: [0, 1],
-          outputRange: [1, 1.3],
-        }),
-      },
+      ...position.getTranslateTransform(),
     ],
-    zIndex: 2,
-  } as any
+  }
 
-  const backAnimatedStyle = {
+  const backAnimation = {
     transform: [
+      { rotate: '8deg' },
       {
-        translateX: animProgres.interpolate({
-          inputRange: [0, 1],
-          outputRange: [8, 0],
-        }),
-      },
-      {
-        translateY: animProgres.interpolate({
-          inputRange: [0, 1],
-          outputRange: [14, 4],
-        }),
-      },
-      {
-        rotate: animProgres.interpolate({
-          inputRange: [0, 1],
-          outputRange: ['8deg', '2deg'],
-        }),
-      },
-      {
-        scale: animProgres.interpolate({
-          inputRange: [0, 1],
-          outputRange: [0.96, 0.99],
+        scale: position.x.interpolate({
+          extrapolate: 'clamp',
+          inputRange: [-CARD_WIDTH / 2, CARD_WIDTH / 2],
+          outputRange: [1, 0.98],
         }),
       },
     ],
-    zIndex: 1,
-  } as any
+  }
 
   return (
     <View className="items-center justify-center flex-1">
       <Animated.View
-        style={{ ...backAnimatedStyle, height: cardHeight, width: cardWidth }}
+        style={{
+          ...backAnimation,
+          height: CARD_HEIGHT,
+          width: CARD_WIDTH,
+        }}
         className="absolute items-stretch justify-items-start rounded-3xl overflow-hidden flex-1 top-10 left-16"
       >
-        {cards[backIndex].component}
+        {cards[backCardIndex].component}
       </Animated.View>
 
       <Animated.View
-        {...panResponder.panHandlers}
+        {...panResponder.current.panHandlers}
         className="absolute items-stretch justify-items-start rounded-3xl overflow-hidden flex-1"
-        style={{ ...frontAnimatedStyle, height: cardHeight, width: cardWidth }}
+        style={{
+          ...frontAnimation,
+          height: CARD_HEIGHT,
+          width: CARD_WIDTH,
+        }}
       >
-        {cards[frontIndex].component}
+        {cards[frontCardIndex].component}
       </Animated.View>
     </View>
   )

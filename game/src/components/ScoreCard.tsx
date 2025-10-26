@@ -7,11 +7,11 @@ import { FontAwesome6 } from '@react-native-vector-icons/fontawesome6'
 export function ScoreCard() {
   return (
     <View className="bg-purple flex-1">
-      <Text className="color-white font-robotoc-bold text-5xl mt-6 mx-4">
+      <Text className="color-white font-robotoc-bold text-5xl mt-8 mx-6">
         Pontuação
       </Text>
 
-      <View className="my-6 gap-3">
+      <View className="my-10 gap-4">
         <View className="flex-row items-center justify-between bg-gray ml-16 px-4 py-3 rounded-l-3xl">
           <View className="items-center flex-row gap-5">
             <Marker />
@@ -55,14 +55,14 @@ export function ScoreCard() {
           style={{
             position: 'absolute',
             left: 10,
-            top: 50,
+            bottom: -118,
             transform: [{ rotate: '15deg' }],
           }}
         />
         <Image
           source={require('../assets/Choppy.png')}
           resizeMode="contain"
-          className="h-[200px] absolute left-1/2 -translate-x-1/2"
+          className="h-[250px] absolute left-1/2 -translate-x-1/2"
         />
       </View>
       <FontAwesome6
