@@ -60,7 +60,7 @@ export function ScoreCard() {
           }}
         />
         <Image
-          source={require('../assets/Choppy.png')}
+          source={require('../assets/Monsters/Choppy.png')}
           resizeMode="contain"
           className="h-[250px] absolute left-1/2 -translate-x-1/2"
         />

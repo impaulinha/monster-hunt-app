@@ -1,7 +1,7 @@
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { Feather } from '@react-native-vector-icons/feather'
 import { useNavigation } from '@react-navigation/native'
-import { View, Text, Image, Alert } from 'react-native'
+import { View, Text, Image } from 'react-native'
 import { AppRoutes } from '../routes/app.routes'
 import { Button } from './Button'
 import '../../global.css'
@@ -27,7 +27,7 @@ export function GameCard() {
           style={{ marginTop: 32, marginLeft: 28 }}
         />
         <Image
-          source={require('../assets/Lucy.png')}
+          source={require('../assets/Monsters/Lucy.png')}
           resizeMode="contain"
           className="h-max absolute left-14 inset-[120px]"
         />
