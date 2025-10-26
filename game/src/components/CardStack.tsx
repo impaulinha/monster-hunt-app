@@ -1,21 +1,23 @@
 import { Animated, Dimensions, PanResponder, View } from 'react-native'
-
-import '../../global.css'
-import { GameCard } from './GameCard'
-import { ScoreCard } from './ScoreCard'
-import { useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { CardItem } from '../types/CardItem'
+import { ScoreCard } from './ScoreCard'
+import { GameCard } from './GameCard'
+import '../../global.css'
 
 export function CardStack() {
-  const cardHeight = 390
-  const cardWidth = 290
-  const SWIPE_THRESHOLD = 120
+  const cardHeight = 400
+  const cardWidth = 300
+  const SWIPE_THRESHOLD = 130
   const { width: SCREEN_W } = Dimensions.get('window')
 
-  const cards: CardItem[] = [
-    { id: 1, component: <GameCard /> },
-    { id: 2, component: <ScoreCard /> },
-  ]
+  const cards: CardItem[] = useMemo(
+    () => [
+      { id: 1, component: <GameCard /> },
+      { id: 2, component: <ScoreCard /> },
+    ],
+    [],
+  )
 
   const [index, setIndex] = useState(0)
   const frontIndex = index % cards.length
@@ -26,8 +28,14 @@ export function CardStack() {
 
   const panResponder = useRef(
     PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: (evt, gestureState) => {
+        const dx = Math.abs(gestureState.dx)
+        const dy = Math.abs(gestureState.dy)
+        return dx > 10 && dx > dy
+      },
+
+      // false para que nao ative em qualquer toque simples
+      onStartShouldSetPanResponder: () => false,
 
       onPanResponderGrant: () => {
         translate.extractOffset()
@@ -52,12 +60,14 @@ export function CardStack() {
         if (absX > SWIPE_THRESHOLD) {
           const toX = movedX > 0 ? SCREEN_W * 1.2 : -SCREEN_W * 1.2
 
+          // Troca o índice antes da animação começar, pra evitar demora ao carregar o próximo card
+          setIndex((s) => (s + 1) % cards.length)
+
           Animated.timing(translate, {
             toValue: { x: toX, y: gestureState.dy * 0.5 },
             duration: 200,
             useNativeDriver: true,
           }).start(() => {
-            setIndex((s) => (s + 1) % cards.length)
             translate.setValue({ x: 0, y: 0 })
             animProgres.setValue(0)
           })
@@ -69,7 +79,7 @@ export function CardStack() {
           }).start()
           Animated.timing(animProgres, {
             toValue: 0,
-            duration: 120,
+            duration: 250,
             useNativeDriver: true,
           }).start()
         }
@@ -115,7 +125,7 @@ export function CardStack() {
       {
         rotate: animProgres.interpolate({
           inputRange: [0, 1],
-          outputRange: ['10deg', '2deg'],
+          outputRange: ['8deg', '2deg'],
         }),
       },
       {
