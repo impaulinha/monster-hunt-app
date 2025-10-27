@@ -3,7 +3,7 @@ import '../../global.css'
 import { CardStack } from '../components/CardStack'
 
 export function Home() {
-  const backgroundImage = require('../assets/BG-Line.png')
+  const backgroundImage = require('../assets/Backgrounds/BG-Line.png')
 
   return (
     <ImageBackground source={backgroundImage} className="bg-background flex-1">
