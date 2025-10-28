@@ -7,6 +7,7 @@ import {
 } from 'react-native'
 import '../../global.css'
 import { BackButton } from '../components/BackButton'
+import { useGame } from '../contexts/GameContext'
 import { useEffect, useState } from 'react'
 import { Monsters } from '../data/Monsters'
 import { Monster } from '../types/Monster'
@@ -21,6 +22,16 @@ export function Game() {
 
   const [targetMonster, setTargetMonster] = useState<Monster | null>(null)
   const [displayMonsters, setDisplayMonsters] = useState<DisplayMonster[]>([])
+
+  const {
+    score,
+    highscores,
+    incrementScore,
+    resetScore,
+    loadHighscores,
+    addNewScore,
+    saveHighscores,
+  } = useGame()
 
   useEffect(() => {
     setupGame()
@@ -47,7 +58,13 @@ export function Game() {
 
   function handleMonsterPress(monster: DisplayMonster) {
     if (monster.monsterId === targetMonster?.id) {
+      incrementScore()
       setupGame()
+    } else {
+      const currentDate = new Date().toLocaleDateString()
+
+      addNewScore(score, currentDate)
+      resetScore()
     }
   }
 
@@ -65,7 +82,9 @@ export function Game() {
             <Text className="color-black font-robotoc-regular text-lg">
               Score
             </Text>
-            <Text className="color-black font-robotoc-bold text-3xl">10</Text>
+            <Text className="color-black font-robotoc-bold text-3xl">
+              {score}
+            </Text>
           </ImageBackground>
           <ImageBackground
             source={require('../assets/Backgrounds/BG-Timer.png')}

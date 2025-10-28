@@ -9,6 +9,7 @@ import {
   RobotoCondensed_400Regular,
   RobotoCondensed_700Bold,
 } from '@expo-google-fonts/roboto-condensed'
+import { GameProvider } from './src/contexts/GameContext'
 
 SplashScreen.preventAutoHideAsync()
 
@@ -32,8 +33,10 @@ export default function App() {
 
   return (
     <>
-      <StatusBar style="auto" />
-      <Routes />
+      <GameProvider>
+        <StatusBar style="auto" />
+        <Routes />
+      </GameProvider>
     </>
   )
 }
