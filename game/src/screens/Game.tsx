@@ -6,13 +6,13 @@ import {
   TouchableOpacity,
   Animated,
 } from 'react-native'
-import '../../global.css'
-import Feather from '@react-native-vector-icons/feather'
+import FontAwesome6 from '@react-native-vector-icons/fontawesome6'
 import { BackButton } from '../components/BackButton'
 import { useEffect, useRef, useState } from 'react'
 import { useGame } from '../contexts/GameContext'
 import { Monsters } from '../data/Monsters'
 import { Monster } from '../types/Monster'
+import '../../global.css'
 
 type DisplayMonster = Monster & {
   key: string
@@ -180,7 +180,12 @@ export function Game() {
             left: tapPosition?.x,
           }}
         >
-          <Feather name="crosshair" size={30} color="#FDC730" />
+          <FontAwesome6
+            name="crosshairs"
+            size={30}
+            color="#FDC730"
+            iconStyle="solid"
+          />
         </Animated.View>
       )}
 
