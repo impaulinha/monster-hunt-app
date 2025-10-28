@@ -4,13 +4,15 @@ import {
   Text,
   Image,
   TouchableOpacity,
+  Animated,
 } from 'react-native'
 import '../../global.css'
 import { BackButton } from '../components/BackButton'
 import { useGame } from '../contexts/GameContext'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Monsters } from '../data/Monsters'
 import { Monster } from '../types/Monster'
+import Feather from '@react-native-vector-icons/feather'
 
 type DisplayMonster = Monster & {
   key: string
@@ -22,6 +24,15 @@ export function Game() {
 
   const [targetMonster, setTargetMonster] = useState<Monster | null>(null)
   const [displayMonsters, setDisplayMonsters] = useState<DisplayMonster[]>([])
+
+  const [tapPosition, setTapPosition] = useState<{
+    x: number
+    y: number
+  } | null>(null)
+  const [plusOne, setPlusOne] = useState<number | null>(null)
+
+  const opacityAnim = useRef(new Animated.Value(1)).current
+  const moveUpAnim = useRef(new Animated.Value(0)).current
 
   const {
     score,
@@ -56,10 +67,37 @@ export function Game() {
     setDisplayMonsters(displayList)
   }
 
-  function handleMonsterPress(monster: DisplayMonster) {
+  function animatePlusOne() {
+    opacityAnim.setValue(1)
+    moveUpAnim.setValue(0)
+
+    Animated.sequence([
+      Animated.parallel([
+        Animated.timing(opacityAnim, {
+          toValue: 0,
+          duration: 500,
+          useNativeDriver: true,
+        }),
+        Animated.timing(moveUpAnim, {
+          toValue: -30,
+          duration: 500,
+          useNativeDriver: true,
+        }),
+      ]),
+    ]).start(() => {
+      setPlusOne(null)
+      setupGame()
+    })
+  }
+
+  function handleMonsterPress(monster: DisplayMonster, e: any) {
+    const { pageX, pageY } = e.nativeEvent
+    setTapPosition({ x: pageX, y: pageY })
+
     if (monster.monsterId === targetMonster?.id) {
       incrementScore()
-      setupGame()
+      setPlusOne(monster.monsterId)
+      animatePlusOne()
     } else {
       const currentDate = new Date().toLocaleDateString()
 
@@ -126,9 +164,22 @@ export function Game() {
             <TouchableOpacity
               key={monster.key}
               activeOpacity={0.8}
-              onPress={() => handleMonsterPress(monster)}
+              onPress={(e) => handleMonsterPress(monster, e)}
               className="w-1/2 p-2 items-center justify-center"
             >
+              {plusOne === monster.id && (
+                <Animated.View
+                  className="absolute right-8 top-[-20px] z-20"
+                  style={{
+                    opacity: opacityAnim,
+                    transform: [{ translateY: moveUpAnim }],
+                  }}
+                >
+                  <Text className=" color-yellow font-robotoc-bold text-4xl ">
+                    +1
+                  </Text>
+                </Animated.View>
+              )}
               <Image
                 source={monster.image}
                 resizeMode="contain"
