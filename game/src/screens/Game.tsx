@@ -7,12 +7,12 @@ import {
   Animated,
 } from 'react-native'
 import '../../global.css'
+import Feather from '@react-native-vector-icons/feather'
 import { BackButton } from '../components/BackButton'
-import { useGame } from '../contexts/GameContext'
 import { useEffect, useRef, useState } from 'react'
+import { useGame } from '../contexts/GameContext'
 import { Monsters } from '../data/Monsters'
 import { Monster } from '../types/Monster'
-import Feather from '@react-native-vector-icons/feather'
 
 type DisplayMonster = Monster & {
   key: string
@@ -33,6 +33,7 @@ export function Game() {
 
   const opacityAnim = useRef(new Animated.Value(1)).current
   const moveUpAnim = useRef(new Animated.Value(0)).current
+  const tapMarkerOpacityAnim = useRef(new Animated.Value(0)).current
 
   const {
     score,
@@ -75,12 +76,12 @@ export function Game() {
       Animated.parallel([
         Animated.timing(opacityAnim, {
           toValue: 0,
-          duration: 500,
+          duration: 100,
           useNativeDriver: true,
         }),
         Animated.timing(moveUpAnim, {
           toValue: -30,
-          duration: 500,
+          duration: 100,
           useNativeDriver: true,
         }),
       ]),
@@ -90,9 +91,22 @@ export function Game() {
     })
   }
 
+  function animateTapMarker() {
+    tapMarkerOpacityAnim.setValue(0)
+
+    Animated.timing(tapMarkerOpacityAnim, {
+      toValue: 1,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => {
+      setTapPosition(null)
+    })
+  }
+
   function handleMonsterPress(monster: DisplayMonster, e: any) {
     const { pageX, pageY } = e.nativeEvent
     setTapPosition({ x: pageX, y: pageY })
+    animateTapMarker()
 
     if (monster.monsterId === targetMonster?.id) {
       incrementScore()
@@ -157,6 +171,18 @@ export function Game() {
           </ImageBackground>
         </View>
       </View>
+
+      {tapPosition && (
+        <Animated.View
+          className="items-center justify-center z-50 w-30 h-30 p-2 rounded-full absolute"
+          style={{
+            top: tapPosition?.y,
+            left: tapPosition?.x,
+          }}
+        >
+          <Feather name="crosshair" size={30} color="#FDC730" />
+        </Animated.View>
+      )}
 
       <View className="flex-1 flex-wrap flex-row items-center justify-center p-4">
         {displayMonsters.map((monster) => {
