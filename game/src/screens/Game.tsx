@@ -29,6 +29,8 @@ export function Game() {
   const [targetMonster, setTargetMonster] = useState<Monster | null>(null)
   const [displayMonsters, setDisplayMonsters] = useState<DisplayMonster[]>([])
 
+  const [time, setTime] = useState(30)
+
   const [tapPosition, setTapPosition] = useState<{
     x: number
     y: number
@@ -43,6 +45,20 @@ export function Game() {
 
   useEffect(() => {
     setupGame()
+
+    const interval = setInterval(() => {
+      setTime((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval)
+          handleGameOver()
+
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+
+    return () => clearInterval(interval)
   }, [])
 
   function setupGame() {
@@ -109,19 +125,25 @@ export function Game() {
       setPlusOne(monster.monsterId)
       animatePlusOne()
     } else {
-      const currentDate = new Date().toLocaleDateString()
-
-      addNewScore(score, currentDate)
-      setCurrentScore(score)
-      setVisible(!visible)
-
-      resetScore()
+      handleGameOver()
     }
+  }
+
+  function handleGameOver() {
+    const currentDate = new Date().toLocaleDateString()
+
+    addNewScore(score, currentDate)
+    setCurrentScore(score)
+    setVisible(!visible)
+
+    resetScore()
   }
 
   function restartGame() {
     setVisible(!visible)
     setupGame()
+    resetScore()
+    setTime(30)
   }
 
   return (
@@ -151,7 +173,7 @@ export function Game() {
               Tempo
             </Text>
             <Text className="color-black font-robotoc-bold text-3xl">
-              00:30
+              {time}
             </Text>
           </ImageBackground>
         </View>
