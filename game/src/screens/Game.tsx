@@ -5,6 +5,7 @@ import {
   Image,
   TouchableOpacity,
   Animated,
+  Modal,
 } from 'react-native'
 import FontAwesome6 from '@react-native-vector-icons/fontawesome6'
 import { BackButton } from '../components/BackButton'
@@ -13,6 +14,7 @@ import { useGame } from '../contexts/GameContext'
 import { Monsters } from '../data/Monsters'
 import { Monster } from '../types/Monster'
 import '../../global.css'
+import { GameOverModal } from '../components/GameOverModal'
 
 type DisplayMonster = Monster & {
   key: string
@@ -21,6 +23,8 @@ type DisplayMonster = Monster & {
 
 export function Game() {
   const backgroundImage = require('../assets/Backgrounds/BG-Line.png')
+  const [visible, setVisible] = useState(false)
+  const [currentScore, setCurrentScore] = useState(0)
 
   const [targetMonster, setTargetMonster] = useState<Monster | null>(null)
   const [displayMonsters, setDisplayMonsters] = useState<DisplayMonster[]>([])
@@ -35,15 +39,7 @@ export function Game() {
   const moveUpAnim = useRef(new Animated.Value(0)).current
   const tapMarkerOpacityAnim = useRef(new Animated.Value(0)).current
 
-  const {
-    score,
-    highscores,
-    incrementScore,
-    resetScore,
-    loadHighscores,
-    addNewScore,
-    saveHighscores,
-  } = useGame()
+  const { score, incrementScore, resetScore, addNewScore } = useGame()
 
   useEffect(() => {
     setupGame()
@@ -116,8 +112,16 @@ export function Game() {
       const currentDate = new Date().toLocaleDateString()
 
       addNewScore(score, currentDate)
+      setCurrentScore(score)
+      setVisible(!visible)
+
       resetScore()
     }
+  }
+
+  function restartGame() {
+    setVisible(!visible)
+    setupGame()
   }
 
   return (
@@ -220,6 +224,19 @@ export function Game() {
           )
         })}
       </View>
+
+      <Modal
+        visible={visible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setVisible(!visible)}
+      >
+        <GameOverModal
+          score={currentScore}
+          onClose={() => setVisible(!visible)}
+          onRestart={() => restartGame()}
+        />
+      </Modal>
     </ImageBackground>
   )
 }

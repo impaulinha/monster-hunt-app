@@ -34,7 +34,7 @@ export default function App() {
   return (
     <>
       <GameProvider>
-        <StatusBar style="auto" />
+        <StatusBar style="dark" translucent />
         <Routes />
       </GameProvider>
     </>
