@@ -25,11 +25,13 @@ export function Game() {
   const backgroundImage = require('../assets/Backgrounds/BG-Line.png')
   const [visible, setVisible] = useState(false)
   const [currentScore, setCurrentScore] = useState(0)
+  const scoreRef = useRef(0)
 
   const [targetMonster, setTargetMonster] = useState<Monster | null>(null)
   const [displayMonsters, setDisplayMonsters] = useState<DisplayMonster[]>([])
 
   const [time, setTime] = useState(30)
+  const timerIntervalRef = useRef<NodeJS.Timeout>(null)
 
   const [tapPosition, setTapPosition] = useState<{
     x: number
@@ -44,21 +46,18 @@ export function Game() {
   const { score, incrementScore, resetScore, addNewScore } = useGame()
 
   useEffect(() => {
+    scoreRef.current = score
+  }, [score])
+
+  useEffect(() => {
     setupGame()
+    startTimer()
 
-    const interval = setInterval(() => {
-      setTime((prev) => {
-        if (prev <= 1) {
-          clearInterval(interval)
-          handleGameOver()
-
-          return 0
-        }
-        return prev - 1
-      })
-    }, 1000)
-
-    return () => clearInterval(interval)
+    return () => {
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current)
+      }
+    }
   }, [])
 
   function setupGame() {
@@ -125,15 +124,40 @@ export function Game() {
       setPlusOne(monster.monsterId)
       animatePlusOne()
     } else {
-      handleGameOver()
+      handleGameOver(score)
     }
   }
 
-  function handleGameOver() {
+  function startTimer() {
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current)
+    }
+
+    timerIntervalRef.current = setInterval(() => {
+      setTime((prev) => {
+        if (prev <= 1) {
+          if (timerIntervalRef.current) {
+            clearInterval(timerIntervalRef.current)
+          }
+
+          setTimeout(() => handleGameOver(scoreRef.current), 100)
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+  }
+
+  function handleGameOver(finalScore: number) {
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current)
+    }
+
+    setCurrentScore(finalScore)
+
     const currentDate = new Date().toLocaleDateString()
 
-    addNewScore(score, currentDate)
-    setCurrentScore(score)
+    addNewScore(finalScore, currentDate)
     setVisible(!visible)
 
     resetScore()
@@ -144,6 +168,7 @@ export function Game() {
     setupGame()
     resetScore()
     setTime(30)
+    startTimer()
   }
 
   return (
