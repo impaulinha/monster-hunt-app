@@ -8,13 +8,14 @@ import {
   Modal,
 } from 'react-native'
 import FontAwesome6 from '@react-native-vector-icons/fontawesome6'
+import { GameOverModal } from '../components/GameOverModal'
 import { BackButton } from '../components/BackButton'
 import { useEffect, useRef, useState } from 'react'
 import { useGame } from '../contexts/GameContext'
 import { Monsters } from '../data/Monsters'
+import { useAudioPlayer } from 'expo-audio'
 import { Monster } from '../types/Monster'
 import '../../global.css'
-import { GameOverModal } from '../components/GameOverModal'
 
 type DisplayMonster = Monster & {
   key: string
@@ -33,6 +34,9 @@ export function Game() {
   const [time, setTime] = useState(30)
   const timerIntervalRef = useRef<NodeJS.Timeout>(null)
 
+  const isCorrectSound = useAudioPlayer(require('../assets/Sounds/Correct.wav'))
+  const gameOverSound = useAudioPlayer(require('../assets/Sounds/Wrong.wav'))
+
   const [tapPosition, setTapPosition] = useState<{
     x: number
     y: number
@@ -50,6 +54,9 @@ export function Game() {
   }, [score])
 
   useEffect(() => {
+    isCorrectSound.seekTo(0)
+    gameOverSound.seekTo(0)
+
     setupGame()
     startTimer()
 
@@ -118,12 +125,16 @@ export function Game() {
     const { pageX, pageY } = e.nativeEvent
     setTapPosition({ x: pageX, y: pageY })
     animateTapMarker()
+    isCorrectSound.seekTo(0)
 
     if (monster.monsterId === targetMonster?.id) {
       incrementScore()
       setPlusOne(monster.monsterId)
       animatePlusOne()
+
+      isCorrectSound.play()
     } else {
+      gameOverSound.seekTo(0)
       handleGameOver(score)
     }
   }
@@ -138,9 +149,11 @@ export function Game() {
         if (prev <= 1) {
           if (timerIntervalRef.current) {
             clearInterval(timerIntervalRef.current)
+            gameOverSound.seekTo(0)
           }
 
           setTimeout(() => handleGameOver(scoreRef.current), 100)
+          gameOverSound.play()
           return 0
         }
         return prev - 1
@@ -158,13 +171,14 @@ export function Game() {
     const currentDate = new Date().toLocaleDateString()
 
     addNewScore(finalScore, currentDate)
-    setVisible(!visible)
+    setVisible(true)
 
     resetScore()
+    gameOverSound.play()
   }
 
   function restartGame() {
-    setVisible(!visible)
+    setVisible(false)
     setupGame()
     resetScore()
     setTime(30)
