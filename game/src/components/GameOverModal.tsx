@@ -1,6 +1,12 @@
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import FontAwesome6 from '@react-native-vector-icons/fontawesome6'
-import { View, Text, Image, TouchableOpacity } from 'react-native'
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  useWindowDimensions,
+} from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import { useGame } from '../contexts/GameContext'
 import { AppRoutes } from '../routes/app.routes'
@@ -16,13 +22,17 @@ type ModalProps = {
 
 export function GameOverModal({ score, onClose, onRestart }: ModalProps) {
   const navigation = useNavigation<NavigationProps>()
+  const { width } = useWindowDimensions()
 
   return (
     <View
       className="items-center justify-center flex-1"
       style={{ backgroundColor: 'rgba(0, 0, 0, 0.4)' }}
     >
-      <View className="bg-purple rounded-2xl w-[320px] h-96 items-center overflow-hidden">
+      <View
+        className="bg-purple rounded-2xl min-h-96 items-center overflow-hidden"
+        style={{ width: Math.min(320, width - 32) }}
+      >
         <View className="items-center justify-center w-full my-6 gap-3">
           <View className="flex-row gap-2">
             <FontAwesome6
@@ -46,7 +56,10 @@ export function GameOverModal({ score, onClose, onRestart }: ModalProps) {
               style={{ marginTop: 12 }}
             />
           </View>
-          <Text className="color-white font-robotoc-regular text-2xl">
+          <Text
+            maxFontSizeMultiplier={1.2}
+            className="color-white font-robotoc-regular text-2xl"
+          >
             Sua pontuação:
           </Text>
         </View>
@@ -58,12 +71,15 @@ export function GameOverModal({ score, onClose, onRestart }: ModalProps) {
         />
 
         <View className="bg-gray w-full items-center justify-center py-6 ml-28">
-          <Text className="color-black font-luckiest text-3xl">
+          <Text
+            maxFontSizeMultiplier={1.2}
+            className="color-black font-luckiest text-3xl"
+          >
             {score} pts
           </Text>
         </View>
 
-        <View className="flex-row items-center justify-end w-full z-30 my-16 gap-8">
+        <View className="flex-row items-center justify-end w-full z-30 mt-16 mb-10 gap-8">
           <TouchableOpacity
             className="bg-light-purple rounded-2xl w-16 h-16 items-center justify-center"
             activeOpacity={0.8}

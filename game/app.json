@@ -2,7 +2,7 @@
   "expo": {
     "name": "Monster Hunt",
     "slug": "monster-hunt",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -21,12 +21,22 @@
         "backgroundColor": "#8E44FF"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
+      ],
+      "package": "com.impaulinha.monsterhunt"
     },
     "web": {
       "favicon": "./assets/favicon.png",
       "bundler": "metro"
     },
-    "plugins": ["expo-font", "expo-audio"]
+    "plugins": ["expo-font", "expo-audio"],
+    "extra": {
+      "eas": {
+        "projectId": "fadcc6ba-6c26-4269-99b5-d8c6afc7de20"
+      }
+    }
   }
 }

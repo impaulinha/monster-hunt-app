@@ -5,6 +5,7 @@ import React, {
   useState,
   ReactNode,
   useEffect,
+  useRef,
 } from 'react'
 
 export type Highscore = {
@@ -28,6 +29,13 @@ const GameContext = createContext<GameContextType>({} as GameContextType)
 export function GameProvider({ children }: { children: ReactNode }) {
   const [score, setScore] = useState(0)
   const [highscores, setHighscores] = useState<Highscore[]>([])
+  // Sempre aponta para o ranking mais recente, mesmo em closures antigas
+  const highscoresRef = useRef<Highscore[]>([])
+
+  function updateHighscores(scores: Highscore[]) {
+    highscoresRef.current = scores
+    setHighscores(scores)
+  }
 
   const incrementScore = () => {
     setScore((prev) => prev + 1)
@@ -42,10 +50,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
     try {
       const newScore: Highscore = { score, date }
-      const updatedHighscores = [...highscores, newScore]
+      const updatedHighscores = [...highscoresRef.current, newScore]
         .sort((a, b) => b.score - a.score)
         .slice(0, 3)
-      setHighscores(updatedHighscores)
+      updateHighscores(updatedHighscores)
       await saveHighscores(updatedHighscores)
     } catch (error) {
       console.log('Error saving score:', error)
@@ -66,9 +74,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
       const storedHighscores = await AsyncStorage.getItem(HIGHSCORES_KEY)
 
       if (storedHighscores !== null) {
-        setHighscores(JSON.parse(storedHighscores))
+        updateHighscores(JSON.parse(storedHighscores))
       } else {
-        setHighscores([])
+        updateHighscores([])
       }
     } catch (error) {
       console.log('Error loading highscores:', error)

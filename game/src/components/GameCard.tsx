@@ -14,10 +14,16 @@ export function GameCard() {
   return (
     <View className="flex-1 bg-gray justify-between">
       <View>
-        <Text className="font-robotoc-bold color-black text-5xl mx-6 mt-8">
+        <Text
+          maxFontSizeMultiplier={1.2}
+          className="font-robotoc-bold color-black text-5xl mx-6 mt-8"
+        >
           Caçando
         </Text>
-        <Text className="font-robotoc-regular color-black text-2xl mx-6">
+        <Text
+          maxFontSizeMultiplier={1.2}
+          className="font-robotoc-regular color-black text-2xl mx-6"
+        >
           Monstros
         </Text>
         <Feather

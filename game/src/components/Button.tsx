@@ -14,7 +14,10 @@ export function Button({ text, onPress }: ButtonProps) {
       onPress={onPress}
       className="flex-row bg-black mb-6 mx-4 p-4 items-center justify-center rounded-full gap-3"
     >
-      <Text className="font-robotoc-regular color-white uppercase text-2xl">
+      <Text
+        maxFontSizeMultiplier={1.2}
+        className="font-robotoc-regular color-white uppercase text-2xl"
+      >
         {text}
       </Text>
       <Feather name="play" size={24} color="#FFF" />

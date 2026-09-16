@@ -1,4 +1,4 @@
-import { Animated, PanResponder, View } from 'react-native'
+import { Animated, LayoutRectangle, PanResponder, View } from 'react-native'
 import { useMemo, useRef, useState } from 'react'
 import { CardItem } from '../types/CardItem'
 import { ScoreCard } from './ScoreCard'
@@ -8,6 +8,12 @@ import '../../global.css'
 export function CardStack() {
   const CARD_HEIGHT = 450
   const CARD_WIDTH = 320
+  // Deslocamento do card de trás em relação ao da frente
+  const BACK_CARD_OFFSET_X = 28
+  const BACK_CARD_OFFSET_Y = -35
+  const SAFE_MARGIN = 24
+
+  const [layout, setLayout] = useState<LayoutRectangle | null>(null)
 
   const position = useRef(new Animated.ValueXY()).current
 
@@ -78,6 +84,8 @@ export function CardStack() {
 
   const backAnimation = {
     transform: [
+      { translateX: BACK_CARD_OFFSET_X },
+      { translateY: BACK_CARD_OFFSET_Y },
       { rotate: '8deg' },
       {
         scale: position.x.interpolate({
@@ -89,30 +97,54 @@ export function CardStack() {
     ],
   }
 
-  return (
-    <View className="items-center justify-center flex-1">
-      <Animated.View
-        style={{
-          ...backAnimation,
-          height: CARD_HEIGHT,
-          width: CARD_WIDTH,
-        }}
-        className="absolute items-stretch justify-items-start rounded-3xl overflow-hidden flex-1 top-10 left-16"
-      >
-        {cards[backCardIndex].component}
-      </Animated.View>
+  // Reduz os cards proporcionalmente quando não cabem no espaço disponível
+  const cardScale = layout
+    ? Math.min(
+        1,
+        layout.width / 2 / (CARD_WIDTH / 2 + BACK_CARD_OFFSET_X),
+        layout.height /
+          2 /
+          (CARD_HEIGHT / 2 + Math.abs(BACK_CARD_OFFSET_Y) + SAFE_MARGIN),
+      )
+    : 1
 
-      <Animated.View
-        {...panResponder.current.panHandlers}
-        className="absolute items-stretch justify-items-start rounded-3xl overflow-hidden flex-1"
-        style={{
-          ...frontAnimation,
-          height: CARD_HEIGHT,
-          width: CARD_WIDTH,
-        }}
-      >
-        {cards[frontCardIndex].component}
-      </Animated.View>
+  return (
+    <View
+      className="items-center justify-center flex-1"
+      onLayout={(event) => setLayout(event.nativeEvent.layout)}
+    >
+      {layout && (
+        <View
+          style={{
+            height: CARD_HEIGHT,
+            width: CARD_WIDTH,
+            transform: [{ scale: cardScale }],
+          }}
+        >
+          <Animated.View
+            style={{
+              ...backAnimation,
+              height: CARD_HEIGHT,
+              width: CARD_WIDTH,
+            }}
+            className="absolute rounded-3xl overflow-hidden"
+          >
+            {cards[backCardIndex].component}
+          </Animated.View>
+
+          <Animated.View
+            {...panResponder.current.panHandlers}
+            className="absolute rounded-3xl overflow-hidden"
+            style={{
+              ...frontAnimation,
+              height: CARD_HEIGHT,
+              width: CARD_WIDTH,
+            }}
+          >
+            {cards[frontCardIndex].component}
+          </Animated.View>
+        </View>
+      )}
     </View>
   )
 }

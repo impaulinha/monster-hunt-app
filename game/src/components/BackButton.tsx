@@ -23,7 +23,10 @@ export function BackButton({ text }: BackButtonProps) {
       >
         <Feather name="chevron-left" size={24} color="#000" />
       </TouchableOpacity>
-      <Text className="font-luckiest color-black text-center text-3xl">
+      <Text
+        maxFontSizeMultiplier={1.2}
+        className="font-luckiest color-black text-center text-3xl"
+      >
         {text}
       </Text>
     </View>
