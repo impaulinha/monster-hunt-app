@@ -39,9 +39,10 @@ export function CardStack() {
 
       onPanResponderRelease: (evt, gestureState) => {
         if (gestureState.dx > 120) {
-          Animated.spring(position, {
+          Animated.timing(position, {
             toValue: { x: CARD_WIDTH + 100, y: gestureState.dy },
-            useNativeDriver: false,
+            duration: 180,
+            useNativeDriver: true,
           }).start(({ finished }) => {
             if (finished) {
               setIndex((currentIndex) => currentIndex + 1)
@@ -49,9 +50,10 @@ export function CardStack() {
             }
           })
         } else if (gestureState.dx < -120) {
-          Animated.spring(position, {
+          Animated.timing(position, {
             toValue: { x: -CARD_WIDTH - 100, y: gestureState.dy },
-            useNativeDriver: false,
+            duration: 180,
+            useNativeDriver: true,
           }).start(({ finished }) => {
             if (finished) {
               setIndex((currentIndex) => currentIndex + 1)

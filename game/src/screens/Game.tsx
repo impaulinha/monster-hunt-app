@@ -17,7 +17,7 @@ import { BackButton } from '../components/BackButton'
 import { useEffect, useRef, useState } from 'react'
 import { useGame } from '../contexts/GameContext'
 import { Monsters } from '../data/Monsters'
-import { useAudioPlayer } from 'expo-audio'
+import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio'
 import { Monster } from '../types/Monster'
 import { AppRoutes } from '../routes/app.routes'
 import '../../global.css'
@@ -66,6 +66,8 @@ export function Game() {
 
   const isCorrectSound = useAudioPlayer(require('../assets/Sounds/Correct.wav'))
   const gameOverSound = useAudioPlayer(require('../assets/Sounds/Wrong.wav'))
+  const correctSoundStatus = useAudioPlayerStatus(isCorrectSound)
+  const pendingCorrectSoundRef = useRef(false)
 
   const [tapPosition, setTapPosition] = useState<{
     x: number
@@ -114,6 +116,14 @@ export function Game() {
       }
     }
   }, [])
+
+  useEffect(() => {
+    if (correctSoundStatus.isLoaded && pendingCorrectSoundRef.current) {
+      pendingCorrectSoundRef.current = false
+      isCorrectSound.seekTo(0)
+      isCorrectSound.play()
+    }
+  }, [correctSoundStatus.isLoaded, isCorrectSound])
 
   function setupGame() {
     const chosen = Monsters[Math.floor(Math.random() * Monsters.length)]
@@ -171,6 +181,16 @@ export function Game() {
     })
   }
 
+  function playCorrectSound() {
+    if (!correctSoundStatus.isLoaded) {
+      pendingCorrectSoundRef.current = true
+      return
+    }
+
+    isCorrectSound.seekTo(0)
+    isCorrectSound.play()
+  }
+
   function handleMonsterPress(monster: DisplayMonster, e: any) {
     if (
       isChangingRoundRef.current ||
@@ -183,7 +203,6 @@ export function Game() {
     const { pageX, pageY } = e.nativeEvent
     setTapPosition({ x: pageX, y: pageY })
     animateTapMarker()
-    isCorrectSound.seekTo(0)
 
     if (monster.monsterId === targetMonster?.id) {
       isChangingRoundRef.current = true
@@ -192,7 +211,7 @@ export function Game() {
       setPlusOne(monster.monsterId)
       animatePlusOne()
 
-      isCorrectSound.play()
+      playCorrectSound()
     } else {
       handleGameOver(scoreRef.current)
     }
