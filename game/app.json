@@ -32,7 +32,11 @@
       "favicon": "./assets/favicon.png",
       "bundler": "metro"
     },
-    "plugins": ["expo-font", "expo-audio"],
+    "plugins": [
+      "expo-font",
+      "expo-audio",
+      "expo-asset"
+    ],
     "extra": {
       "eas": {
         "projectId": "fadcc6ba-6c26-4269-99b5-d8c6afc7de20"
